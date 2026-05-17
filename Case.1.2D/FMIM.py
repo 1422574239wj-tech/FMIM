@@ -4,7 +4,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import copy
 
-
 class FMIM(nn.Module):  # Renamed from RectifiedFlow
     def __init__(self,
                  dtype: torch.dtype,
