@@ -126,39 +126,6 @@ class ResBlock(EmbedBlock):
         return latent
 
 
-class AttnBlock(nn.Module):
-    """Enhanced attention block to improve long-range dependency modeling"""
-    def __init__(self, in_ch: int):
-        super().__init__()
-        self.group_norm = nn.GroupNorm(32, in_ch)
-        self.proj_q = nn.Conv2d(in_ch, in_ch, kernel_size=1, stride=1, padding=0)
-        self.proj_k = nn.Conv2d(in_ch, in_ch, kernel_size=1, stride=1, padding=0)
-        self.proj_v = nn.Conv2d(in_ch, in_ch, kernel_size=1, stride=1, padding=0)
-        self.proj = nn.Conv2d(in_ch, in_ch, kernel_size=1, stride=1, padding=0)
-        self.scale = nn.Parameter(torch.tensor(1.0 / (in_ch ** 0.5)))
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        B, C, H, W = x.shape
-        h = self.group_norm(x)
-        q = self.proj_q(h)
-        k = self.proj_k(h)
-        v = self.proj_v(h)
-
-        q = q.permute(0, 2, 3, 1).view(B, H * W, C)
-        k = k.view(B, C, H * W)
-        w = torch.bmm(q, k) * self.scale
-        assert list(w.shape) == [B, H * W, H * W]
-        w = F.softmax(w, dim=-1)
-
-        v = v.permute(0, 2, 3, 1).view(B, H * W, C)
-        h = torch.bmm(w, v)
-        assert list(h.shape) == [B, H * W, C]
-        h = h.view(B, H, W, C).permute(0, 3, 1, 2)
-        h = self.proj(h)
-
-        return x + h
-
-
 def grid_reshape(x, ld=5):
     if x < np.power(2, ld):
         x1 = np.power(2, ld)
@@ -169,8 +136,8 @@ def grid_reshape(x, ld=5):
 
 class Unet(nn.Module):
     """U-Net model adapted for FMIM"""
-    def __init__(self, in_ch=3, mod_ch=64, out_ch=3, ch_mul=[1, 2, 4, 8], num_res_blocks=3, cdim=10,
-                 use_conv=True, droprate=0, dtype=torch.float32, image_size=(60, 60), tdim=128,
+    def __init__(self, in_ch=1, mod_ch=64, out_ch=1, ch_mul=[1, 2, 4], num_res_blocks=2, cdim=16850,
+                 use_conv=True, droprate=0, dtype=torch.float32, image_size=(32, 32), tdim=256,
                  ts_feature=None):
         super().__init__()
         self.in_ch = in_ch
