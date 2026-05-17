@@ -100,7 +100,6 @@ class ResBlock(EmbedBlock):
 
     def forward(self, x: torch.Tensor, temb: torch.Tensor, cemb: torch.Tensor) -> torch.Tensor:
         latent = self.block_1(x)
-        # Fuse time embedding and conditional embedding (broadcast to spatial dimension)
         latent += self.temb_proj(temb)[:, :, None, None]
         latent += self.cemb_proj(cemb)[:, :, None, None]
         latent = self.block_2(latent)
@@ -109,35 +108,6 @@ class ResBlock(EmbedBlock):
         return latent
 
 
-class AttnBlock(nn.Module):
-    """Self-attention block to enhance spatial dependency capture"""
-    def __init__(self, in_ch: int):
-        super().__init__()
-        self.group_norm = nn.GroupNorm(32, in_ch)
-        self.proj_q = nn.Conv2d(in_ch, in_ch, kernel_size=1, stride=1, padding=0)
-        self.proj_k = nn.Conv2d(in_ch, in_ch, kernel_size=1, stride=1, padding=0)
-        self.proj_v = nn.Conv2d(in_ch, in_ch, kernel_size=1, stride=1, padding=0)
-        self.proj = nn.Conv2d(in_ch, in_ch, kernel_size=1, stride=1, padding=0)
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        B, C, H, W = x.shape
-        h = self.group_norm(x)
-        q = self.proj_q(h)
-        k = self.proj_k(h)
-        v = self.proj_v(h)
-
-        # Flatten spatial dimensions for attention calculation
-        q = q.permute(0, 2, 3, 1).view(B, H * W, C)
-        k = k.view(B, C, H * W)
-        w = torch.bmm(q, k) * (int(C) ** (-0.5))  # Scaled dot-product attention
-        w = F.softmax(w, dim=-1)
-
-        v = v.permute(0, 2, 3, 1).view(B, H * W, C)
-        h = torch.bmm(w, v)
-        h = h.view(B, H, W, C).permute(0, 3, 1, 2)
-        h = self.proj(h)
-
-        return x + h  # Residual connection
 
 import numpy as np
 def grid_reshape(x, ld=6):
@@ -151,8 +121,8 @@ def grid_reshape(x, ld=6):
 
 class Unet(nn.Module):
     """U-Net model adapted for velocity field prediction"""
-    def __init__(self, in_ch=3, mod_ch=64, out_ch=None, ch_mul=[1, 2, 4, 8], num_res_blocks=2, cdim=10,
-                 use_conv=True, droprate=0, dtype=torch.float32, image_size=(60, 60), tdim=128,
+    def __init__(self, in_ch=3, mod_ch=64, out_ch=None, ch_mul=[1, 2, 4], num_res_blocks=2, cdim=10,
+                 use_conv=True, droprate=0, dtype=torch.float32, image_size=(60, 60), tdim=500,
                  ts_feature=None):
         super().__init__()
         self.in_ch = in_ch
