@@ -118,7 +118,9 @@ Then set:
 export FMIM_CASE1_DATA=/path/to/FMIM/datasets/Case1_2D_Aquifer
 ```
 
-For other cases, arrange the required parameter ensembles, dynamic-response arrays, PCA objects, reference observations, and validation outputs according to the corresponding scripts.
+The original Brugge benchmark data used for Case 2 can be accessed through the Brugge model publication/data source:
+
+https://doi.org/10.1016/j.cageo.2012.07.018
 
 ---
 
