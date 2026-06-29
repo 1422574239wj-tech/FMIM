@@ -239,12 +239,13 @@ This repository contains the neural-network implementation and case-level traini
 If you use this code, please cite the associated manuscript:
 
 ```bibtex
-@article{liu2026fmim,
-  title   = {A Flow Matching-Based Deep Generative Framework for End-to-End Hydrogeological Parameter Inversion in Subsurface Multiphase Flow},
-  author  = {Liu, Piyang and Wang, Jie and Zhang, Kai and Zhang, Liming and Zhang, Jinding and Tao, Zhi and Yao, Jun and Zhang, Wei},
-  journal = {Journal of Hydrology},
-  year    = {2026},
-  note    = {Manuscript under review / in revision}
+@article{liu2026flow,
+  title={A flow matching-based deep generative framework for end-to-end hydrogeological parameter inversion in subsurface multiphase flow},
+  author={Liu, Piyang and Wang, Jie and Zhang, Kai and Zhang, Liming and Zhang, Jinding and Tao, Zhi and Yao, Jun and Zhang, Wei},
+  journal={Journal of Hydrology},
+  pages={135890},
+  year={2026},
+  publisher={Elsevier}
 }
 ```
 
