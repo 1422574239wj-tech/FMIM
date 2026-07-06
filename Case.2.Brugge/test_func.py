@@ -134,7 +134,7 @@ def test(dataloader, dobstrue_norm, true_para_norm, data_max, data_min, params, 
     # Load main model weights
     try:
         fmim_model.model.load_state_dict(
-            torch.load("fmim_model.pth", map_location=device)
+            torch.load("fmim.pth", map_location=device)
         )
         fmim_model.model.to(device)
         print("Successfully loaded main model weights and moved to device")
